@@ -162,3 +162,88 @@ export async function matchQuizRecommendations(quizAnswers: {
 
   return products;
 }
+
+export async function createProduct(data: {
+  categoryId: number;
+  companyId: number;
+  code: string;
+  title: string;
+  slug: string;
+  summary: string;
+  fullDescription?: string;
+  highlightPoints?: string[];
+  minEntryAge?: number;
+  maxEntryAge?: number;
+  minPremium: number;
+  premiumPaymentTerm: string;
+  coverageTerm: string;
+  isTaxDeductible?: boolean;
+  maxTaxDeduction?: number;
+  isFeatured?: boolean;
+}) {
+  const [result]: any = await pool.query(`
+    INSERT INTO products (
+      category_id, company_id, code, title, slug, summary, full_description,
+      highlight_points, min_entry_age, max_entry_age, min_premium,
+      premium_payment_term, coverage_term, is_tax_deductible, max_tax_deduction,
+      is_featured, is_active, rating
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, 4.8)
+  `, [
+    data.categoryId,
+    data.companyId,
+    data.code,
+    data.title,
+    data.slug,
+    data.summary,
+    data.fullDescription || null,
+    JSON.stringify(data.highlightPoints || []),
+    data.minEntryAge || 0,
+    data.maxEntryAge || 70,
+    data.minPremium,
+    data.premiumPaymentTerm,
+    data.coverageTerm,
+    data.isTaxDeductible ? 1 : 0,
+    data.maxTaxDeduction || 0,
+    data.isFeatured ? 1 : 0,
+  ]);
+
+  return { id: result.insertId, ...data };
+}
+
+export async function updateProduct(id: number, data: Partial<{
+  title: string;
+  summary: string;
+  minPremium: number;
+  minEntryAge: number;
+  maxEntryAge: number;
+  isTaxDeductible: boolean;
+  maxTaxDeduction: number;
+  isFeatured: boolean;
+  isActive: boolean;
+}>) {
+  const fields: string[] = [];
+  const values: any[] = [];
+
+  if (data.title !== undefined) { fields.push('title = ?'); values.push(data.title); }
+  if (data.summary !== undefined) { fields.push('summary = ?'); values.push(data.summary); }
+  if (data.minPremium !== undefined) { fields.push('min_premium = ?'); values.push(data.minPremium); }
+  if (data.minEntryAge !== undefined) { fields.push('min_entry_age = ?'); values.push(data.minEntryAge); }
+  if (data.maxEntryAge !== undefined) { fields.push('max_entry_age = ?'); values.push(data.maxEntryAge); }
+  if (data.isTaxDeductible !== undefined) { fields.push('is_tax_deductible = ?'); values.push(data.isTaxDeductible ? 1 : 0); }
+  if (data.maxTaxDeduction !== undefined) { fields.push('max_tax_deduction = ?'); values.push(data.maxTaxDeduction); }
+  if (data.isFeatured !== undefined) { fields.push('is_featured = ?'); values.push(data.isFeatured ? 1 : 0); }
+  if (data.isActive !== undefined) { fields.push('is_active = ?'); values.push(data.isActive ? 1 : 0); }
+
+  if (fields.length === 0) return { id, message: 'No fields to update' };
+
+  values.push(id);
+  await pool.query(`UPDATE products SET ${fields.join(', ')} WHERE id = ?`, values);
+  return { id, success: true };
+}
+
+export async function deleteProduct(id: number) {
+  // Soft delete
+  await pool.query('UPDATE products SET is_active = FALSE WHERE id = ?', [id]);
+  return { id, success: true, message: 'Product deactivated successfully' };
+}
+

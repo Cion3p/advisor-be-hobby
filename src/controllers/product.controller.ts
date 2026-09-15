@@ -78,3 +78,74 @@ export async function quizRecommend(req: Request, res: Response, next: NextFunct
     next(error);
   }
 }
+
+export async function createProduct(req: Request, res: Response, next: NextFunction) {
+  try {
+    const {
+      categoryId,
+      companyId,
+      code,
+      title,
+      slug,
+      summary,
+      fullDescription,
+      highlightPoints,
+      minEntryAge,
+      maxEntryAge,
+      minPremium,
+      premiumPaymentTerm,
+      coverageTerm,
+      isTaxDeductible,
+      maxTaxDeduction,
+      isFeatured,
+    } = req.body;
+
+    if (!title || !minPremium || !code) {
+      return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลผลิตภัณฑ์ที่จำเป็นให้ครบถ้วน' });
+    }
+
+    const newProduct = await productService.createProduct({
+      categoryId: Number(categoryId || 1),
+      companyId: Number(companyId || 1),
+      code,
+      title,
+      slug: slug || code.toLowerCase().replace(/\s+/g, '-'),
+      summary: summary || title,
+      fullDescription,
+      highlightPoints,
+      minEntryAge: Number(minEntryAge || 0),
+      maxEntryAge: Number(maxEntryAge || 70),
+      minPremium: Number(minPremium),
+      premiumPaymentTerm: premiumPaymentTerm || 'ชำระรายปี',
+      coverageTerm: coverageTerm || 'ตลอดชีพ',
+      isTaxDeductible: Boolean(isTaxDeductible),
+      maxTaxDeduction: Number(maxTaxDeduction || 0),
+      isFeatured: Boolean(isFeatured),
+    });
+
+    res.status(201).json({ success: true, data: newProduct });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateProduct(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await productService.updateProduct(Number(id), req.body);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteProduct(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await productService.deleteProduct(Number(id));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+

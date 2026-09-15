@@ -17,6 +17,9 @@ router.get('/products', productController.listProducts);
 router.get('/products/:slug', productController.getProductDetail);
 router.post('/products/compare', productController.compareProducts);
 router.post('/recommendations/quiz', productController.quizRecommend);
+router.post('/admin/products', productController.createProduct);
+router.put('/admin/products/:id', productController.updateProduct);
+router.delete('/admin/products/:id', productController.deleteProduct);
 
 // Financial Calculators
 router.post('/calculators/tax-deduction', calculatorController.calculateTax);
