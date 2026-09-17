@@ -25,6 +25,19 @@ export function calculateTax(req: Request, res: Response, next: NextFunction) {
       proposedLifeInsurance: Number(body.proposedLifeInsurance || 0),
       proposedHealthInsurance: Number(body.proposedHealthInsurance || 0),
       proposedPension: Number(body.proposedPension || 0),
+      otherDeductions: body.otherDeductions ? {
+        socialSecurity: Number(body.otherDeductions.socialSecurity || 0),
+        spouseAllowance: Boolean(body.otherDeductions.spouseAllowance),
+        childrenCount: Number(body.otherDeductions.childrenCount || 0),
+        parentsCount: Number(body.otherDeductions.parentsCount || 0),
+        disabledCareCount: Number(body.otherDeductions.disabledCareCount || 0),
+        mortgageInterest: Number(body.otherDeductions.mortgageInterest || 0),
+        thaiEsg: Number(body.otherDeductions.thaiEsg || 0),
+        rmfPvdSsf: Number(body.otherDeductions.rmfPvdSsf || 0),
+        easyEReceipt: Number(body.otherDeductions.easyEReceipt || 0),
+        educationDonation: Number(body.otherDeductions.educationDonation || 0),
+        generalDonation: Number(body.otherDeductions.generalDonation || 0),
+      } : undefined,
     });
 
     res.json({ success: true, data: result });
