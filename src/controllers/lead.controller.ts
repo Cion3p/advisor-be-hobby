@@ -13,6 +13,8 @@ export async function submitLead(req: Request, res: Response, next: NextFunction
       ageRange,
       budgetRange,
       userNotes,
+      tags,
+      status,
       pdpaConsent,
     } = req.body;
 
@@ -20,9 +22,8 @@ export async function submitLead(req: Request, res: Response, next: NextFunction
       return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อและเบอร์โทรศัพท์สำหรับติดต่อกลับ' });
     }
 
-    if (!pdpaConsent) {
-      return res.status(400).json({ success: false, message: 'กรุณายินยอมเงื่อนไข PDPA เพื่อให้เจ้าหน้าที่ติดต่อกลับ' });
-    }
+    // If created by admin or user, ensure pdpaConsent is true
+    const consent = pdpaConsent !== undefined ? Boolean(pdpaConsent) : true;
 
     const result = await leadService.createLead({
       customerName,
@@ -34,7 +35,9 @@ export async function submitLead(req: Request, res: Response, next: NextFunction
       ageRange,
       budgetRange,
       userNotes,
-      pdpaConsent: Boolean(pdpaConsent),
+      tags,
+      status: status || 'NEW',
+      pdpaConsent: consent,
     });
 
     res.status(201).json({ success: true, data: result });
@@ -56,11 +59,11 @@ export async function listLeads(req: Request, res: Response, next: NextFunction)
 export async function updateLeadStatus(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
-    const { status, notes } = req.body;
-    if (!status) {
-      return res.status(400).json({ success: false, message: 'กรุณาระบุสถานะที่ต้องการอัปเดต' });
+    const { status, notes, tags } = req.body;
+    if (!status && tags === undefined && notes === undefined) {
+      return res.status(400).json({ success: false, message: 'กรุณาระบุข้อมูลที่ต้องการอัปเดต' });
     }
-    const result = await leadService.updateLeadStatus(Number(id), status, notes);
+    const result = await leadService.updateLeadStatus(Number(id), status, notes, tags);
     res.json({ success: true, data: result });
   } catch (error) {
     next(error);

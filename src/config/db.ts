@@ -163,6 +163,7 @@ export async function initDatabase(): Promise<boolean> {
         age_range VARCHAR(50),
         budget_range VARCHAR(100),
         user_notes TEXT,
+        tags JSON,
         pdpa_consent BOOLEAN NOT NULL DEFAULT TRUE,
         status ENUM('NEW', 'CONTACTED', 'CONSULTING', 'CLOSED_WON', 'CLOSED_LOST') DEFAULT 'NEW',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -172,6 +173,10 @@ export async function initDatabase(): Promise<boolean> {
         CONSTRAINT fk_leads_agent FOREIGN KEY (assigned_agent_id) REFERENCES agents(id) ON DELETE SET NULL
       ) ENGINE=InnoDB;
     `);
+
+    try {
+      await pool.query('ALTER TABLE leads ADD COLUMN tags JSON NULL AFTER user_notes;');
+    } catch {}
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS articles (

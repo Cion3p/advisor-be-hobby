@@ -10,7 +10,9 @@ export interface CreateLeadDto {
   ageRange?: string;
   budgetRange?: string;
   userNotes?: string;
+  tags?: string[] | string;
   pdpaConsent: boolean;
+  status?: string;
 }
 
 export async function createLead(dto: CreateLeadDto) {
@@ -25,12 +27,18 @@ export async function createLead(dto: CreateLeadDto) {
 
   const assignedAgentId = availableAgents.length > 0 ? availableAgents[0].id : null;
 
+  const tagsJson = dto.tags
+    ? JSON.stringify(Array.isArray(dto.tags) ? dto.tags : [dto.tags])
+    : JSON.stringify([]);
+
+  const initialStatus = dto.status || 'NEW';
+
   const [result]: any = await pool.query(`
     INSERT INTO leads (
       customer_name, customer_phone, customer_email, interested_product_id,
       assigned_agent_id, preferred_contact_time, province, age_range,
-      budget_range, user_notes, pdpa_consent, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW')
+      budget_range, user_notes, tags, pdpa_consent, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     dto.customerName,
     dto.customerPhone,
@@ -42,7 +50,9 @@ export async function createLead(dto: CreateLeadDto) {
     dto.ageRange || null,
     dto.budgetRange || null,
     dto.userNotes || null,
+    tagsJson,
     dto.pdpaConsent ? 1 : 0,
+    initialStatus,
   ]);
 
   if (assignedAgentId) {
@@ -51,7 +61,8 @@ export async function createLead(dto: CreateLeadDto) {
 
   return {
     leadId: result.insertId,
-    status: 'NEW',
+    status: initialStatus,
+    tags: Array.isArray(dto.tags) ? dto.tags : dto.tags ? [dto.tags] : [],
     assignedAgentId,
     message: 'ได้รับข้อมูลคำขอรับคำปรึกษาเรียบร้อยแล้ว ที่ปรึกษาจะติดต่อกลับตามเวลาที่ท่านสะดวก',
   };
@@ -77,23 +88,51 @@ export async function getLeads(status?: string) {
 
   query += ' ORDER BY l.created_at DESC';
 
-  const [rows] = await pool.query(query, params);
-  return rows;
+  const [rows]: any = await pool.query(query, params);
+  return rows.map((r: any) => {
+    let parsedTags: string[] = [];
+    if (r.tags) {
+      if (Array.isArray(r.tags)) parsedTags = r.tags;
+      else {
+        try {
+          parsedTags = JSON.parse(r.tags);
+        } catch {
+          parsedTags = [String(r.tags)];
+        }
+      }
+    }
+    return {
+      ...r,
+      tags: parsedTags,
+    };
+  });
 }
 
-export async function updateLeadStatus(leadId: number, status: string, notes?: string) {
-  await pool.query(
-    'UPDATE leads SET status = ?, user_notes = COALESCE(?, user_notes) WHERE id = ?',
-    [status, notes || null, leadId]
-  );
-  return { success: true, leadId, status };
+export async function updateLeadStatus(leadId: number, status: string, notes?: string, tags?: string[] | string) {
+  let updateQuery = 'UPDATE leads SET status = ?, user_notes = COALESCE(?, user_notes)';
+  const params: any[] = [status, notes || null];
+
+  if (tags !== undefined) {
+    updateQuery += ', tags = ?';
+    params.push(JSON.stringify(Array.isArray(tags) ? tags : [tags]));
+  }
+
+  updateQuery += ' WHERE id = ?';
+  params.push(leadId);
+
+  await pool.query(updateQuery, params);
+  return { 
+    success: true, 
+    leadId, 
+    status, 
+    tags: tags !== undefined ? (Array.isArray(tags) ? tags : [tags]) : undefined 
+  };
 }
 
 export async function deleteLead(leadId: number) {
   await pool.query('DELETE FROM leads WHERE id = ?', [leadId]);
   return { success: true, leadId };
 }
-
 
 export async function getDashboardStats() {
   const [leadCounts]: any = await pool.query(`
@@ -117,4 +156,3 @@ export async function getDashboardStats() {
     totalProducts: productCount[0]?.total_products || 0,
   };
 }
-
