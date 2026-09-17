@@ -89,6 +89,12 @@ export async function updateLeadStatus(leadId: number, status: string, notes?: s
   return { success: true, leadId, status };
 }
 
+export async function deleteLead(leadId: number) {
+  await pool.query('DELETE FROM leads WHERE id = ?', [leadId]);
+  return { success: true, leadId };
+}
+
+
 export async function getDashboardStats() {
   const [leadCounts]: any = await pool.query(`
     SELECT 

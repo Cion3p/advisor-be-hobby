@@ -67,7 +67,18 @@ export async function updateLeadStatus(req: Request, res: Response, next: NextFu
   }
 }
 
+export async function deleteLead(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await leadService.deleteLead(Number(id));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getDashboardStats(req: Request, res: Response, next: NextFunction) {
+
   try {
     const stats = await leadService.getDashboardStats();
     res.json({ success: true, data: stats });

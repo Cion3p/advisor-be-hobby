@@ -253,3 +253,121 @@ export async function deleteProduct(id: number) {
   return { id, success: true, message: 'Product deactivated successfully' };
 }
 
+// ---------------------------------------------------------------------------
+// CATEGORIES CRUD
+// ---------------------------------------------------------------------------
+export async function createCategory(data: {
+  slug: string;
+  nameTh: string;
+  nameEn: string;
+  categoryType?: 'INSURANCE' | 'INVESTMENT' | 'TAX';
+  description?: string;
+  icon?: string;
+  sortOrder?: number;
+}) {
+  const [result]: any = await pool.query(`
+    INSERT INTO categories (slug, name_th, name_en, category_type, description, icon, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `, [
+    data.slug,
+    data.nameTh,
+    data.nameEn,
+    data.categoryType || 'INSURANCE',
+    data.description || null,
+    data.icon || 'ShieldCheck',
+    data.sortOrder || 0,
+  ]);
+  return { id: result.insertId, ...data };
+}
+
+export async function updateCategory(id: number, data: Partial<{
+  slug: string;
+  nameTh: string;
+  nameEn: string;
+  categoryType: 'INSURANCE' | 'INVESTMENT' | 'TAX';
+  description: string;
+  icon: string;
+  sortOrder: number;
+}>) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  if (data.slug !== undefined) { fields.push('slug = ?'); values.push(data.slug); }
+  if (data.nameTh !== undefined) { fields.push('name_th = ?'); values.push(data.nameTh); }
+  if (data.nameEn !== undefined) { fields.push('name_en = ?'); values.push(data.nameEn); }
+  if (data.categoryType !== undefined) { fields.push('category_type = ?'); values.push(data.categoryType); }
+  if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description); }
+  if (data.icon !== undefined) { fields.push('icon = ?'); values.push(data.icon); }
+  if (data.sortOrder !== undefined) { fields.push('sort_order = ?'); values.push(data.sortOrder); }
+
+  if (fields.length === 0) return { id, message: 'No fields to update' };
+  values.push(id);
+  await pool.query(`UPDATE categories SET ${fields.join(', ')} WHERE id = ?`, values);
+  return { id, success: true };
+}
+
+export async function deleteCategory(id: number) {
+  await pool.query('DELETE FROM categories WHERE id = ?', [id]);
+  return { id, success: true };
+}
+
+// ---------------------------------------------------------------------------
+// COMPANIES CRUD
+// ---------------------------------------------------------------------------
+export async function getCompanies() {
+  const [rows] = await pool.query(`
+    SELECT comp.*, COUNT(p.id) as product_count
+    FROM companies comp
+    LEFT JOIN products p ON p.company_id = comp.id AND p.is_active = TRUE
+    GROUP BY comp.id
+    ORDER BY comp.id ASC
+  `);
+  return rows;
+}
+
+export async function createCompany(data: {
+  name: string;
+  code: string;
+  logoUrl?: string;
+  contactPhone?: string;
+  isActive?: boolean;
+}) {
+  const [result]: any = await pool.query(`
+    INSERT INTO companies (name, code, logo_url, contact_phone, is_active)
+    VALUES (?, ?, ?, ?, ?)
+  `, [
+    data.name,
+    data.code.toUpperCase(),
+    data.logoUrl || null,
+    data.contactPhone || null,
+    data.isActive !== undefined ? (data.isActive ? 1 : 0) : 1,
+  ]);
+  return { id: result.insertId, ...data };
+}
+
+export async function updateCompany(id: number, data: Partial<{
+  name: string;
+  code: string;
+  logoUrl: string;
+  contactPhone: string;
+  isActive: boolean;
+}>) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
+  if (data.code !== undefined) { fields.push('code = ?'); values.push(data.code.toUpperCase()); }
+  if (data.logoUrl !== undefined) { fields.push('logo_url = ?'); values.push(data.logoUrl); }
+  if (data.contactPhone !== undefined) { fields.push('contact_phone = ?'); values.push(data.contactPhone); }
+  if (data.isActive !== undefined) { fields.push('is_active = ?'); values.push(data.isActive ? 1 : 0); }
+
+  if (fields.length === 0) return { id, message: 'No fields to update' };
+  values.push(id);
+  await pool.query(`UPDATE companies SET ${fields.join(', ')} WHERE id = ?`, values);
+  return { id, success: true };
+}
+
+export async function deleteCompany(id: number) {
+  await pool.query('DELETE FROM companies WHERE id = ?', [id]);
+  return { id, success: true };
+}
+
+

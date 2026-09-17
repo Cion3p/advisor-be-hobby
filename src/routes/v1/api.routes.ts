@@ -14,6 +14,15 @@ router.get('/health', (req, res) => {
 
 // Categories & Products
 router.get('/categories', productController.listCategories);
+router.post('/admin/categories', productController.createCategory);
+router.put('/admin/categories/:id', productController.updateCategory);
+router.delete('/admin/categories/:id', productController.deleteCategory);
+
+router.get('/companies', productController.listCompanies);
+router.post('/admin/companies', productController.createCompany);
+router.put('/admin/companies/:id', productController.updateCompany);
+router.delete('/admin/companies/:id', productController.deleteCompany);
+
 router.get('/products', productController.listProducts);
 router.get('/products/:slug', productController.getProductDetail);
 router.post('/products/compare', productController.compareProducts);
@@ -31,7 +40,10 @@ router.post('/calculators/life-value', calculatorController.calculateLifeValue);
 router.post('/leads', leadController.submitLead);
 router.get('/leads', leadController.listLeads);
 router.patch('/leads/:id/status', leadController.updateLeadStatus);
+router.delete('/leads/:id', leadController.deleteLead);
+router.delete('/admin/leads/:id', leadController.deleteLead);
 router.get('/admin/stats', leadController.getDashboardStats);
+
 
 // Articles & SEO Blog
 router.get('/articles', articleController.listArticles);

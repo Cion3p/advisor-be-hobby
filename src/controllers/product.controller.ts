@@ -150,3 +150,99 @@ export async function deleteProduct(req: Request, res: Response, next: NextFunct
   }
 }
 
+// ---------------------------------------------------------------------------
+// CATEGORY CONTROLLERS
+// ---------------------------------------------------------------------------
+export async function createCategory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { slug, nameTh, nameEn, categoryType, description, icon, sortOrder } = req.body;
+    if (!slug || !nameTh) {
+      return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อหมวดหมู่และรหัส slug ให้ครบถ้วน' });
+    }
+    const result = await productService.createCategory({
+      slug,
+      nameTh,
+      nameEn: nameEn || nameTh,
+      categoryType,
+      description,
+      icon,
+      sortOrder: sortOrder ? Number(sortOrder) : 0,
+    });
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateCategory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await productService.updateCategory(Number(id), req.body);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteCategory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await productService.deleteCategory(Number(id));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// COMPANY CONTROLLERS
+// ---------------------------------------------------------------------------
+export async function listCompanies(req: Request, res: Response, next: NextFunction) {
+  try {
+    const companies = await productService.getCompanies();
+    res.json({ success: true, count: (companies as any[]).length, data: companies });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createCompany(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { name, code, logoUrl, contactPhone, isActive } = req.body;
+    if (!name || !code) {
+      return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อบริษัทและรหัสย่อ (Code) ให้ครบถ้วน' });
+    }
+    const result = await productService.createCompany({
+      name,
+      code,
+      logoUrl,
+      contactPhone,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+    });
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateCompany(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await productService.updateCompany(Number(id), req.body);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteCompany(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const result = await productService.deleteCompany(Number(id));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
