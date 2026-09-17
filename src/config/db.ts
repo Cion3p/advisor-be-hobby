@@ -236,6 +236,15 @@ export async function initDatabase(): Promise<boolean> {
       ) ENGINE=InnoDB;
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS analytics_events (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        event_type VARCHAR(50) NOT NULL,
+        event_data JSON,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `);
+
     console.log('✅ Database schema initialized successfully.');
     return true;
   } catch (error) {

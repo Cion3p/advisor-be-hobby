@@ -4,6 +4,7 @@ import * as calculatorController from '../../controllers/calculator.controller.j
 import * as leadController from '../../controllers/lead.controller.js';
 import * as articleController from '../../controllers/article.controller.js';
 import * as bannerController from '../../controllers/banner.controller.js';
+import * as analyticsController from '../../controllers/analytics.controller.js';
 
 const router = Router();
 
@@ -11,6 +12,10 @@ const router = Router();
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'financial-advisory-api', timestamp: new Date().toISOString() });
 });
+
+// Real Analytics & Telemetry
+router.get('/analytics', analyticsController.getAnalytics);
+router.post('/analytics/track', analyticsController.trackEvent);
 
 // Categories & Products
 router.get('/categories', productController.listCategories);
