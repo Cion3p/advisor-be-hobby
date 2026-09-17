@@ -23,6 +23,7 @@ router.delete('/admin/products/:id', productController.deleteProduct);
 
 // Financial Calculators
 router.post('/calculators/tax-deduction', calculatorController.calculateTax);
+router.post('/calculators/tax', calculatorController.calculateTax);
 router.post('/calculators/life-value', calculatorController.calculateLifeValue);
 
 // Leads & Consultations

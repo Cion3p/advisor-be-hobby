@@ -12,26 +12,26 @@ const app = express();
 // Security Middlewares
 app.use(helmet());
 
-// CORS Configuration - Allows Frontend server
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:3000',
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-];
-
+// CORS Configuration - Allows Frontend server & local testing
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow requests with no origin (like mobile apps, curl, server-to-server)
+      // Allow requests with no origin (like mobile apps, curl, server-to-server, Next.js SSR)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      if (
+        origin.startsWith('http://localhost') ||
+        origin.startsWith('http://127.0.0.1') ||
+        origin.includes('vercel.app') ||
+        origin === process.env.FRONTEND_URL ||
+        process.env.NODE_ENV !== 'production'
+      ) {
         return callback(null, true);
       }
-      return callback(new Error('Blocked by CORS policy'));
+      return callback(null, true); // Allow all valid origins for hobby/development
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 

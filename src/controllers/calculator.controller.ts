@@ -4,28 +4,27 @@ import { computeLifeValue } from '../services/lifeValueCalculator.service.js';
 
 export function calculateTax(req: Request, res: Response, next: NextFunction) {
   try {
-    const {
-      annualIncome,
-      existingLifeInsurance,
-      existingHealthInsurance,
-      existingPension,
-      proposedLifeInsurance,
-      proposedHealthInsurance,
-      proposedPension,
-    } = req.body;
+    const body = req.body || {};
+    let income = body.annualIncome;
+    if ((income === undefined || isNaN(Number(income))) && body.monthlyIncome !== undefined) {
+      income = Number(body.monthlyIncome) * 12;
+    }
 
-    if (annualIncome === undefined || isNaN(Number(annualIncome))) {
-      return res.status(400).json({ success: false, message: 'กรุณาระบุรายได้พึงประเมินทั้งปี (annualIncome)' });
+    if (income === undefined || isNaN(Number(income))) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'กรุณาระบุรายได้พึงประเมินทั้งปี (annualIncome) หรือรายได้ต่อเดือน (monthlyIncome)' 
+      });
     }
 
     const result = computeTaxDeduction({
-      annualIncome: Number(annualIncome),
-      existingLifeInsurance: Number(existingLifeInsurance || 0),
-      existingHealthInsurance: Number(existingHealthInsurance || 0),
-      existingPension: Number(existingPension || 0),
-      proposedLifeInsurance: Number(proposedLifeInsurance || 0),
-      proposedHealthInsurance: Number(proposedHealthInsurance || 0),
-      proposedPension: Number(proposedPension || 0),
+      annualIncome: Number(income),
+      existingLifeInsurance: Number(body.existingLifeInsurance || 0),
+      existingHealthInsurance: Number(body.existingHealthInsurance || 0),
+      existingPension: Number(body.existingPension || 0),
+      proposedLifeInsurance: Number(body.proposedLifeInsurance || 0),
+      proposedHealthInsurance: Number(body.proposedHealthInsurance || 0),
+      proposedPension: Number(body.proposedPension || 0),
     });
 
     res.json({ success: true, data: result });
