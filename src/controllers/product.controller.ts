@@ -12,10 +12,11 @@ export async function listCategories(req: Request, res: Response, next: NextFunc
 
 export async function listProducts(req: Request, res: Response, next: NextFunction) {
   try {
-    const { category, minAge, maxBudget, isTaxDeductible, search } = req.query;
+    const { category, minAge, maxBudget, isTaxDeductible, search, company } = req.query;
 
     const filter: productService.ProductFilter = {
       categorySlug: category as string,
+      company: company as string,
       minAge: minAge ? parseInt(minAge as string, 10) : undefined,
       maxBudget: maxBudget ? parseFloat(maxBudget as string) : undefined,
       isTaxDeductible: isTaxDeductible !== undefined ? isTaxDeductible === 'true' : undefined,

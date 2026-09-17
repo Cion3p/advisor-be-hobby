@@ -3,6 +3,7 @@ import * as productController from '../../controllers/product.controller.js';
 import * as calculatorController from '../../controllers/calculator.controller.js';
 import * as leadController from '../../controllers/lead.controller.js';
 import * as articleController from '../../controllers/article.controller.js';
+import * as bannerController from '../../controllers/banner.controller.js';
 
 const router = Router();
 
@@ -35,5 +36,17 @@ router.get('/admin/stats', leadController.getDashboardStats);
 // Articles & SEO Blog
 router.get('/articles', articleController.listArticles);
 router.get('/articles/:slug', articleController.getArticleBySlug);
+router.post('/admin/articles', articleController.createArticle);
+router.put('/admin/articles/:id', articleController.updateArticle);
+router.delete('/admin/articles/:id', articleController.deleteArticle);
+
+// Hero Slides & Announcements
+router.get('/hero-slides', bannerController.listHeroSlides);
+router.post('/admin/hero-slides', bannerController.createHeroSlide);
+router.put('/admin/hero-slides/:id', bannerController.updateHeroSlide);
+router.delete('/admin/hero-slides/:id', bannerController.deleteHeroSlide);
+
+router.get('/announcements', bannerController.getAnnouncement);
+router.put('/admin/announcements', bannerController.updateAnnouncement);
 
 export default router;

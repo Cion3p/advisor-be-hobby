@@ -179,11 +179,60 @@ export async function initDatabase(): Promise<boolean> {
         slug VARCHAR(255) NOT NULL UNIQUE,
         excerpt TEXT NOT NULL,
         content LONGTEXT NOT NULL,
-        cover_image_url VARCHAR(500),
+        cover_image_url LONGTEXT,
         reading_time_minutes INT DEFAULT 5,
         is_published BOOLEAN DEFAULT TRUE,
         published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_articles_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS hero_slides (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        badge_text VARCHAR(255) NOT NULL,
+        badge_icon VARCHAR(100) DEFAULT 'Shield',
+        title VARCHAR(255) NOT NULL,
+        title_highlight VARCHAR(255),
+        subtitle TEXT NOT NULL,
+        tags JSON,
+        primary_btn_label VARCHAR(100) NOT NULL,
+        primary_btn_href VARCHAR(255) NOT NULL,
+        secondary_btn_label VARCHAR(100),
+        secondary_btn_href VARCHAR(255),
+        card_badge VARCHAR(100),
+        card_main_title VARCHAR(255),
+        card_main_metric VARCHAR(100),
+        card_main_metric_sub VARCHAR(255),
+        stat1_label VARCHAR(100),
+        stat1_value VARCHAR(100),
+        stat1_desc VARCHAR(255),
+        stat2_label VARCHAR(100),
+        stat2_value VARCHAR(100),
+        stat2_desc VARCHAR(255),
+        card_footer_note VARCHAR(255),
+        background_image LONGTEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        sort_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        badge_text VARCHAR(255),
+        title VARCHAR(255) NOT NULL,
+        subtitle TEXT NOT NULL,
+        image_url LONGTEXT,
+        primary_btn_label VARCHAR(100) NOT NULL,
+        primary_btn_href VARCHAR(255) NOT NULL,
+        secondary_btn_label VARCHAR(100),
+        secondary_btn_href VARCHAR(255),
+        show_countdown BOOLEAN DEFAULT FALSE,
+        countdown_end_date VARCHAR(100),
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB;
     `);
 

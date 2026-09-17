@@ -1,133 +1,341 @@
 import { pool, initDatabase } from '../config/db.js';
 
 export async function seedData() {
-  console.log('🌱 Starting database seeding...');
+  console.log('🌱 Starting comprehensive database seeding...');
   await initDatabase();
 
   try {
-    // Check if data exists
-    const [existingCategories]: any = await pool.query('SELECT COUNT(*) as count FROM categories');
-    if (existingCategories[0].count > 0) {
-      console.log('ℹ️ Database already contains data. Skipping seed.');
-      return;
+    // 1. Seed Companies
+    const [existingCompanies]: any = await pool.query('SELECT COUNT(*) as count FROM companies');
+    if (existingCompanies[0].count === 0) {
+      await pool.query(`
+        INSERT INTO companies (id, name, code, logo_url, contact_phone) VALUES
+        (1, 'เอไอเอ ประเทศไทย (AIA)', 'AIA', '/images/companies/aia.png', '1581'),
+        (2, 'เมืองไทยประกันชีวิต (Muang Thai Life)', 'MTL', '/images/companies/mtl.png', '1766'),
+        (3, 'อลิอันซ์ อยุธยา (Allianz Ayudhya)', 'AZAY', '/images/companies/azay.png', '1373'),
+        (4, 'กรุงไทย-แอกซ่า (Krungthai-AXA)', 'KTAXA', '/images/companies/ktaxa.png', '1159'),
+        (5, 'เอฟดับบลิวดี ประกันชีวิต (FWD)', 'FWD', '/images/companies/fwd.png', '1351');
+      `);
+      console.log('✅ Companies seeded.');
     }
 
-    // 1. Seed Companies
-    await pool.query(`
-      INSERT INTO companies (id, name, code, logo_url, contact_phone) VALUES
-      (1, 'เอไอเอ ประเทศไทย (AIA)', 'AIA', '/images/companies/aia.png', '1581'),
-      (2, 'เมืองไทยประกันชีวิต (Muang Thai Life)', 'MTL', '/images/companies/mtl.png', '1766'),
-      (3, 'อลิอันซ์ อยุธยา (Allianz Ayudhya)', 'AZAY', '/images/companies/azay.png', '1373'),
-      (4, 'กรุงไทย-แอกซ่า (Krungthai-AXA)', 'KTAXA', '/images/companies/ktaxa.png', '1159'),
-      (5, 'เอฟดับบลิวดี ประกันชีวิต (FWD)', 'FWD', '/images/companies/fwd.png', '1351');
-    `);
-
     // 2. Seed Categories
-    await pool.query(`
-      INSERT INTO categories (id, slug, name_th, name_en, category_type, description, icon, sort_order) VALUES
-      (1, 'health-insurance', 'ประกันสุขภาพเหมาจ่าย', 'Health Insurance', 'INSURANCE', 'คุ้มครองค่ารักษาพยาบาล ค่าห้อง ผ่าตัด และโรคร้ายแรง ครอบคลุมทั้ง IPD และ OPD', 'HeartPulse', 1),
-      (2, 'life-protection', 'ประกันชีวิตและมรดก', 'Life & Protection', 'INSURANCE', 'สร้างหลักประกันทางการเงินมั่นคงและส่งต่อมรดกให้คนที่คุณรักด้วยทุนประกันสูง', 'ShieldCheck', 2),
-      (3, 'savings-insurance', 'ประกันสะสมทรัพย์', 'Endowment / Savings', 'INSURANCE', 'ออมเงินอย่างมีวินัย พร้อมความคุ้มครองชีวิตและการันตีเงินคืนสม่ำเสมอทุกปี', 'PiggyBank', 3),
-      (4, 'annuity-pension', 'ประกันบำนาญ', 'Annuity / Pension', 'INSURANCE', 'วางแผนเพื่อวัยเกษียณ รับเงินบำนาญแน่นอนทุกปีจนถึงอายุ 85-99 ปี พร้อมสิทธิลดหย่อนภาษี', 'SunMedium', 4),
-      (5, 'tax-saving-funds', 'ผลิตภัณฑ์ลดหย่อนภาษี & การลงทุน', 'Tax & Wealth', 'TAX', 'วางแผนภาษีส่งท้ายปีด้วยประกันชีวิต ประกันสุขภาพ และกองทุนรวม ThaiESG / RMF', 'ReceiptPercent', 5);
-    `);
+    const [existingCategories]: any = await pool.query('SELECT COUNT(*) as count FROM categories');
+    if (existingCategories[0].count === 0) {
+      await pool.query(`
+        INSERT INTO categories (id, slug, name_th, name_en, category_type, description, icon, sort_order) VALUES
+        (1, 'health-insurance', 'ประกันสุขภาพเหมาจ่าย', 'Health Insurance', 'INSURANCE', 'คุ้มครองค่ารักษาพยาบาล ค่าห้อง ผ่าตัด และโรคร้ายแรง ครอบคลุมทั้ง IPD และ OPD', 'HeartPulse', 1),
+        (2, 'life-protection', 'ประกันชีวิตและมรดก', 'Life & Protection', 'INSURANCE', 'สร้างหลักประกันทางการเงินมั่นคงและส่งต่อมรดกให้คนที่คุณรักด้วยทุนประกันสูง', 'ShieldCheck', 2),
+        (3, 'savings-insurance', 'ประกันสะสมทรัพย์', 'Endowment / Savings', 'INSURANCE', 'ออมเงินอย่างมีวินัย พร้อมความคุ้มครองชีวิตและการันตีเงินคืนสม่ำเสมอทุกปี', 'PiggyBank', 3),
+        (4, 'annuity-pension', 'ประกันบำนาญ', 'Annuity / Pension', 'INSURANCE', 'วางแผนเพื่อวัยเกษียณ รับเงินบำนาญแน่นอนทุกปีจนถึงอายุ 85-99 ปี พร้อมสิทธิลดหย่อนภาษี', 'SunMedium', 4),
+        (5, 'tax-saving-funds', 'ผลิตภัณฑ์ลดหย่อนภาษี & การลงทุน', 'Tax & Wealth', 'TAX', 'วางแผนภาษีส่งท้ายปีด้วยประกันชีวิต ประกันสุขภาพ และกองทุนรวม ThaiESG / RMF', 'ReceiptPercent', 5);
+      `);
+      console.log('✅ Categories seeded.');
+    }
 
     // 3. Seed Products
-    await pool.query(`
-      INSERT INTO products (
-        id, category_id, company_id, code, title, slug, summary, full_description, highlight_points,
-        min_entry_age, max_entry_age, min_premium, premium_payment_term, coverage_term,
-        is_tax_deductible, max_tax_deduction, is_featured, rating
-      ) VALUES
-      (
-        1, 1, 2, 'MTL-ELITE-HEALTH',
-        'เมืองไทย อีลิท เฮลท์ พลัส (Elite Health Plus)',
-        'elite-health-plus-mtl',
-        'ประกันสุขภาพเหมาจ่ายระดับพรีเมียม วงเงินคุ้มครองสูง 20 - 100 ล้านบาทต่อปี ครอบคลุมค่าห้องเดี่ยวมาตรฐาน และการรักษามะเร็งแบบ Targeted Therapy',
-        'สัญญาเพิ่มเติมการประกันภัยสุขภาพแบบ อีลิท เฮลท์ พลัส คุ้มครองทั้งกรณีเจ็บป่วยจากโรคทั่วไป โรคร้ายแรง โรคระบาด และอุบัติเหตุ พร้อมดูแลสุขภาพตลอด 24 ชม. ทั่วโลกตามพื้นที่ความคุ้มครองที่เลือก',
-        JSON_ARRAY('เหมาจ่ายค่ารักษาพยาบาล 20 - 100 ล้านบาท/ปี', 'คุ้มครองค่าห้องเดี่ยวมาตรฐานทุกโรงพยาบาล', 'ครอบคลุมการรักษามะเร็ง Targeted Therapy & Immunotherapy', 'ต่ออายุสัญญาได้ถึงอายุ 99 ปี'),
-        11, 75, 24500.00, 'ชำระเบี้ยรายปี', 'คุ้มครองถึงอายุ 99 ปี',
-        TRUE, 25000.00, TRUE, 4.9
-      ),
-      (
-        2, 1, 1, 'AIA-HEALTH-HAPPY',
-        'เอไอเอ เฮลท์ แฮปปี้ (AIA Health Happy)',
-        'aia-health-happy',
-        'เหมาเบิ้ลคุ้มครองสูงสุด 4 เท่าเมื่อตรวจพบโรคร้ายแรง แผนเหมาจ่ายเข้าใจง่าย ไม่มีข้อจำกัดค่าห้องจุกจิก',
-        'เอไอเอ เฮลท์ แฮปปี้ ให้คุณแฮปปี้กับความคุ้มครองแบบเหมาจ่ายค่ารักษาพยาบาล 1 - 25 ล้านบาทต่อรอบปีกรมธรรม์ เบิ้ลความคุ้มครองเป็น 2 เท่าต่อเนื่อง 4 ปีกรมธรรม์เมื่อตรวจพบ 3 กลุ่มโรคร้ายแรง',
-        JSON_ARRAY('เหมาจ่ายค่ารักษาพยาบาล 1 - 25 ล้านบาท/ปี', 'เบิ้ลความคุ้มครอง 2 เท่าเมื่อตรวจพบโรคร้ายแรง รวมสูงสุด 4 ปีกรมธรรม์', 'ไม่จำกัดค่าห้อง (ตามค่าห้องเดี่ยวมาตรฐาน)', 'เบี้ยประกันสามารถนำไปลดหย่อนภาษีได้'),
-        6, 75, 18200.00, 'ชำระเบี้ยรายปี', 'คุ้มครองถึงอายุ 99 ปี',
-        TRUE, 25000.00, TRUE, 4.8
-      ),
-      (
-        3, 3, 3, 'AZAY-MY-DOUBLE-PLUS',
-        'อลิอันซ์ มาย ดับเบิล พลัส 10/5 (My Double Plus 10/5)',
-        'allianz-my-double-plus-10-5',
-        'ออมสั้นเพียง 5 ปี คุ้มครองนาน 10 ปี รับเงินจ่ายคืนประจำปีสูง พร้อมเงินก้อนคืนเมื่อครบกำหนดสัญญา',
-        'แผนประกันสะสมทรัพย์ยอดนิยมสำหรับผู้ที่ต้องการออมเงินระยะสั้น เพื่อเป้าหมายระยะกลาง ได้ผลตอบแทนแน่นอน ชัดเจน ไม่ผันผวนตามตลาดหุ้น',
-        JSON_ARRAY('จ่ายเบี้ยสั้นเพียง 5 ปี คุ้มครองยาว 10 ปี', 'รับเงินคืนทุกปี ปีละ 8% ของทุนประกันภัย', 'ครบกำหนดสัญญารับเงินก้อนใหญ่ 500% ของทุนประกัน', 'ลดหย่อนภาษีได้สูงสุด 100,000 บาท/ปี'),
-        1, 65, 30000.00, '5 ปี', '10 ปี',
-        TRUE, 100000.00, TRUE, 4.7
-      ),
-      (
-        4, 4, 4, 'KTAXA-RETIRE-READY',
-        'กรุงไทย-แอกซ่า รีไทร์ เรดดี้ 85/55 (Retire Ready)',
-        'ktaxa-retire-ready-pension',
-        'วางแผนเกษียณแบบสบายใจ รับเงินบำนาญทุกปีตั้งแต่อายุ 55 ถึง 85 ปี การันตีเงินคืนรวมสูงสุดกว่า 600%',
-        'ประกันชีวิตแบบบำนาญที่ช่วยให้คุณมีรายได้ต่อเนื่องหลังเกษียณ สร้างคุณภาพชีวิตที่มั่นคง ไร้กังวลเรื่องเงินหมดก่อนวัยอันควร พร้อมสิทธิลดหย่อนภาษีกลุ่มบำนาญสูงสุด 200,000 บาท',
-        JSON_ARRAY('รับเงินบำนาญสม่ำเสมอ 15% ของทุนประกัน ทุกปีตั้งแต่อายุ 55 - 85 ปี', 'การันตีจ่ายเงินบำนาญขั้นต่ำ 15 ปี', 'สิทธิลดหย่อนภาษีส่วนบำนาญสูงสุด 200,000 บาท', 'ไม่ต้องตรวจและตอบคำถามสุขภาพสำหรับบางแผน'),
-        20, 50, 35000.00, 'ถึงอายุ 55 หรือ 60 ปี', 'คุ้มครองถึงอายุ 85 ปี',
-        TRUE, 200000.00, FALSE, 4.8
-      );
-    `);
+    const [existingProducts]: any = await pool.query('SELECT COUNT(*) as count FROM products');
+    if (existingProducts[0].count === 0) {
+      await pool.query(`
+        INSERT INTO products (
+          id, category_id, company_id, code, title, slug, summary, full_description, highlight_points,
+          min_entry_age, max_entry_age, min_premium, premium_payment_term, coverage_term,
+          is_tax_deductible, max_tax_deduction, is_featured, rating
+        ) VALUES
+        (
+          1, 1, 2, 'MTL-ELITE-HEALTH',
+          'เมืองไทย อีลิท เฮลท์ พลัส (Elite Health Plus)',
+          'elite-health-plus-mtl',
+          'ประกันสุขภาพเหมาจ่ายระดับพรีเมียม วงเงินคุ้มครองสูง 20 - 100 ล้านบาทต่อปี ครอบคลุมค่าห้องเดี่ยวมาตรฐาน และการรักษามะเร็งแบบ Targeted Therapy',
+          'สัญญาเพิ่มเติมการประกันภัยสุขภาพแบบ อีลิท เฮลท์ พลัส คุ้มครองทั้งกรณีเจ็บป่วยจากโรคทั่วไป โรคร้ายแรง โรคระบาด และอุบัติเหตุ พร้อมดูแลสุขภาพตลอด 24 ชม. ทั่วโลกตามพื้นที่ความคุ้มครองที่เลือก',
+          JSON_ARRAY('เหมาจ่ายค่ารักษาพยาบาล 20 - 100 ล้านบาท/ปี', 'คุ้มครองค่าห้องเดี่ยวมาตรฐานทุกโรงพยาบาล', 'ครอบคลุมการรักษามะเร็ง Targeted Therapy & Immunotherapy', 'ต่ออายุสัญญาได้ถึงอายุ 99 ปี'),
+          11, 75, 24500.00, 'ชำระเบี้ยรายปี', 'คุ้มครองถึงอายุ 99 ปี',
+          TRUE, 25000.00, TRUE, 4.9
+        ),
+        (
+          2, 1, 1, 'AIA-HEALTH-HAPPY',
+          'เอไอเอ เฮลท์ แฮปปี้ (AIA Health Happy)',
+          'aia-health-happy',
+          'เหมาเบิ้ลคุ้มครองสูงสุด 4 เท่าเมื่อตรวจพบโรคร้ายแรง แผนเหมาจ่ายเข้าใจง่าย ไม่มีข้อจำกัดค่าห้องจุกจิก',
+          'เอไอเอ เฮลท์ แฮปปี้ ให้คุณแฮปปี้กับความคุ้มครองแบบเหมาจ่ายค่ารักษาพยาบาล 1 - 25 ล้านบาทต่อรอบปีกรมธรรม์ เบิ้ลความคุ้มครองเป็น 2 เท่าต่อเนื่อง 4 ปีกรมธรรม์เมื่อตรวจพบ 3 กลุ่มโรคร้ายแรง',
+          JSON_ARRAY('เหมาจ่ายค่ารักษาพยาบาล 1 - 25 ล้านบาท/ปี', 'เบิ้ลความคุ้มครอง 2 เท่าเมื่อตรวจพบโรคร้ายแรง รวมสูงสุด 4 ปีกรมธรรม์', 'ไม่จำกัดค่าห้อง (ตามค่าห้องเดี่ยวมาตรฐาน)', 'เบี้ยประกันสามารถนำไปลดหย่อนภาษีได้'),
+          6, 75, 18200.00, 'ชำระเบี้ยรายปี', 'คุ้มครองถึงอายุ 99 ปี',
+          TRUE, 25000.00, TRUE, 4.8
+        ),
+        (
+          3, 3, 3, 'AZAY-MY-DOUBLE-PLUS',
+          'อลิอันซ์ มาย ดับเบิล พลัส 10/5 (My Double Plus 10/5)',
+          'allianz-my-double-plus-10-5',
+          'ออมสั้นเพียง 5 ปี คุ้มครองนาน 10 ปี รับเงินจ่ายคืนประจำปีสูง พร้อมเงินก้อนคืนเมื่อครบกำหนดสัญญา',
+          'แผนประกันสะสมทรัพย์ยอดนิยมสำหรับผู้ที่ต้องการออมเงินระยะสั้น เพื่อเป้าหมายระยะกลาง ได้ผลตอบแทนแน่นอน ชัดเจน ไม่ผันผวนตามตลาดหุ้น',
+          JSON_ARRAY('จ่ายเบี้ยสั้นเพียง 5 ปี คุ้มครองยาว 10 ปี', 'รับเงินคืนทุกปี ปีละ 8% ของทุนประกันภัย', 'ครบกำหนดสัญญารับเงินก้อนใหญ่ 500% ของทุนประกัน', 'ลดหย่อนภาษีได้สูงสุด 100,000 บาท/ปี'),
+          1, 65, 30000.00, '5 ปี', '10 ปี',
+          TRUE, 100000.00, TRUE, 4.7
+        ),
+        (
+          4, 4, 4, 'KTAXA-RETIRE-READY',
+          'กรุงไทย-แอกซ่า รีไทร์ เรดดี้ 85/55 (Retire Ready)',
+          'ktaxa-retire-ready-pension',
+          'วางแผนเกษียณแบบสบายใจ รับเงินบำนาญทุกปีตั้งแต่อายุ 55 ถึง 85 ปี การันตีเงินคืนรวมสูงสุดกว่า 600%',
+          'ประกันชีวิตแบบบำนาญที่ช่วยให้คุณมีรายได้ต่อเนื่องหลังเกษียณ สร้างคุณภาพชีวิตที่มั่นคง ไร้กังวลเรื่องเงินหมดก่อนวัยอันควร พร้อมสิทธิลดหย่อนภาษีกลุ่มบำนาญสูงสุด 200,000 บาท',
+          JSON_ARRAY('รับเงินบำนาญสม่ำเสมอ 15% ของทุนประกัน ทุกปีตั้งแต่อายุ 55 - 85 ปี', 'การันตีจ่ายเงินบำนาญขั้นต่ำ 15 ปี', 'สิทธิลดหย่อนภาษีส่วนบำนาญสูงสุด 200,000 บาท', 'ไม่ต้องตรวจและตอบคำถามสุขภาพสำหรับบางแผน'),
+          20, 50, 35000.00, 'ถึงอายุ 55 หรือ 60 ปี', 'คุ้มครองถึงอายุ 85 ปี',
+          TRUE, 200000.00, FALSE, 4.8
+        );
+      `);
 
-    // 4. Seed Product Plans & Benefits
-    await pool.query(`
-      INSERT INTO product_plans (id, product_id, plan_name, base_sum_assured, base_premium_male, base_premium_female, details) VALUES
-      (1, 1, 'แผน 20 ล้านบาท', 20000000.00, 24500.00, 26800.00, JSON_OBJECT('room_type', 'ห้องเดี่ยวมาตรฐาน', 'opd_coverage', 'ตามวงเงินเหมาจ่ายกรณีต่อเนื่อง', 'deductible', 'ไม่มีความรับผิดส่วนแรก')),
-      (2, 1, 'แผน 50 ล้านบาท', 50000000.00, 38200.00, 42100.00, JSON_OBJECT('room_type', 'ห้องเดี่ยวมาตรฐาน หรือ 10,000 บาท/วัน', 'opd_coverage', 'เหมาจ่าย OPD 50,000 บาท/ปี', 'deductible', 'ไม่มีความรับผิดส่วนแรก')),
-      (3, 2, 'แผน 5 ล้านบาท', 5000000.00, 18200.00, 20500.00, JSON_OBJECT('room_type', 'ห้องเดี่ยวมาตรฐาน', 'double_critical_illness', 'เพิ่มวงเงินเป็น 10 ล้านบาท เมื่อเป็นโรคร้าย')),
-      (4, 3, 'แผนทุนประกัน 100,000', 100000.00, 30000.00, 30000.00, JSON_OBJECT('annual_cashback', '8,000 บาท/ปี', 'maturity_payout', '500,000 บาท'));
-    `);
+      await pool.query(`
+        INSERT INTO product_plans (id, product_id, plan_name, base_sum_assured, base_premium_male, base_premium_female, details) VALUES
+        (1, 1, 'แผน 20 ล้านบาท', 20000000.00, 24500.00, 26800.00, JSON_OBJECT('room_type', 'ห้องเดี่ยวมาตรฐาน', 'opd_coverage', 'ตามวงเงินเหมาจ่ายกรณีต่อเนื่อง', 'deductible', 'ไม่มีความรับผิดส่วนแรก')),
+        (2, 1, 'แผน 50 ล้านบาท', 50000000.00, 38200.00, 42100.00, JSON_OBJECT('room_type', 'ห้องเดี่ยวมาตรฐาน หรือ 10,000 บาท/วัน', 'opd_coverage', 'เหมาจ่าย OPD 50,000 บาท/ปี', 'deductible', 'ไม่มีความรับผิดส่วนแรก')),
+        (3, 2, 'แผน 5 ล้านบาท', 5000000.00, 18200.00, 20500.00, JSON_OBJECT('room_type', 'ห้องเดี่ยวมาตรฐาน', 'double_critical_illness', 'เพิ่มวงเงินเป็น 10 ล้านบาท เมื่อเป็นโรคร้าย')),
+        (4, 3, 'แผนทุนประกัน 100,000', 100000.00, 30000.00, 30000.00, JSON_OBJECT('annual_cashback', '8,000 บาท/ปี', 'maturity_payout', '500,000 บาท'));
+      `);
 
-    await pool.query(`
-      INSERT INTO product_benefits (product_id, benefit_category, benefit_title, coverage_amount_desc, sort_order) VALUES
-      (1, 'IPD_OPD', 'ค่ารักษาพยาบาลกรณีผู้ป่วยใน (IPD)', 'เหมาจ่ายตามจริงสูงสุด 20 - 100 ล้านบาท/ปี', 1),
-      (1, 'IPD_OPD', 'ค่าห้อง ค่าอาหาร ค่าบริการพยาบาล', 'ห้องเดี่ยวมาตรฐาน ไม่จำกัดจำนวนวัน', 2),
-      (1, 'CRITICAL_ILLNESS', 'การรักษามะเร็งแบบพุ่งเป้า (Targeted Therapy)', 'เหมาจ่ายตามจริงในวงเงินผลประโยชน์', 3),
-      (2, 'IPD_OPD', 'ค่ารักษาพยาบาลเหมาจ่ายต่อรอบปีกรมธรรม์', 'สูงสุด 5 - 25 ล้านบาท', 1),
-      (2, 'CRITICAL_ILLNESS', 'ผลประโยชน์เพิ่มเป็น 2 เท่าสำหรับโรคร้ายแรง', 'รวมสูงสุด 4 ปีกรมธรรม์', 2),
-      (3, 'SAVINGS_RETURN', 'เงินจ่ายคืนประจำปีกรมธรรม์', 'ปีละ 8% ของจำนวนเงินเอาประกันภัย', 1),
-      (3, 'SAVINGS_RETURN', 'เงินครบกำหนดสัญญา ณ สิ้นปีกรมธรรม์ที่ 10', '500% ของจำนวนเงินเอาประกันภัย', 2),
-      (4, 'TAX_SAVING', 'สิทธิลดหย่อนภาษีเงินได้บุคคลธรรมดา', 'สูงสุด 200,000 บาท ตามเกณฑ์กรมสรรพากร', 1);
-    `);
+      await pool.query(`
+        INSERT INTO product_benefits (product_id, benefit_category, benefit_title, coverage_amount_desc, sort_order) VALUES
+        (1, 'IPD_OPD', 'ค่ารักษาพยาบาลกรณีผู้ป่วยใน (IPD)', 'เหมาจ่ายตามจริงสูงสุด 20 - 100 ล้านบาท/ปี', 1),
+        (1, 'IPD_OPD', 'ค่าห้อง ค่าอาหาร ค่าบริการพยาบาล', 'ห้องเดี่ยวมาตรฐาน ไม่จำกัดจำนวนวัน', 2),
+        (1, 'CRITICAL_ILLNESS', 'การรักษามะเร็งแบบพุ่งเป้า (Targeted Therapy)', 'เหมาจ่ายตามจริงในวงเงินผลประโยชน์', 3),
+        (2, 'IPD_OPD', 'ค่ารักษาพยาบาลเหมาจ่ายต่อรอบปีกรมธรรม์', 'สูงสุด 5 - 25 ล้านบาท', 1),
+        (2, 'CRITICAL_ILLNESS', 'ผลประโยชน์เพิ่มเป็น 2 เท่าสำหรับโรคร้ายแรง', 'รวมสูงสุด 4 ปีกรมธรรม์', 2),
+        (3, 'SAVINGS_RETURN', 'เงินจ่ายคืนประจำปีกรมธรรม์', 'ปีละ 8% ของจำนวนเงินเอาประกันภัย', 1),
+        (3, 'SAVINGS_RETURN', 'เงินครบกำหนดสัญญา ณ สิ้นปีกรมธรรม์ที่ 10', '500% ของจำนวนเงินเอาประกันภัย', 2),
+        (4, 'TAX_SAVING', 'สิทธิลดหย่อนภาษีเงินได้บุคคลธรรมดา', 'สูงสุด 200,000 บาท ตามเกณฑ์กรมสรรพากร', 1);
+      `);
+      console.log('✅ Products, plans & benefits seeded.');
+    }
 
-    // 5. Seed Articles for SEO
-    await pool.query(`
-      INSERT INTO articles (category_id, author_name, author_license, title, slug, excerpt, content, reading_time_minutes) VALUES
-      (
-        1,
-        'กิตติศักดิ์ โภคทรัพย์ (CFP®, ที่ปรึกษาการเงิน)',
-        'ใบอนุญาต คปภ. เลขที่ 6401029384',
-        'วิธีเลือกประกันสุขภาพเหมาจ่าย 2567 ฉบับเข้าใจง่าย ไม่โดนเท ไม่จ่ายเบี้ยทิ้ง',
-        'how-to-choose-health-insurance-2026',
-        'เจาะลึก 5 จุดเช็กพอยต์สำคัญก่อนตัดสินใจซื้อประกันสุขภาพเหมาจ่าย ทั้งเงื่อนไขค่าห้อง การรักษา OPD และข้อควรระวังเรื่องระยะเวลารอคอย (Waiting Period)',
-        '# วิธีเลือกประกันสุขภาพเหมาจ่าย 2567\n\nการมีประกันสุขภาพเหมาจ่ายกลายเป็นสิ่งจำเป็นในยุคที่ค่ารักษาพยาบาลและค่าห้องพยาบาลปรับตัวสูงขึ้นทุกปี บทความนี้จะสรุปหัวใจสำคัญ 5 ข้อที่ต้องรู้ก่อนทำประกันสุขภาพ...',
-        6
-      ),
-      (
-        5,
-        'วราภรณ์ วงศ์สวัสดิ์ (ที่ปรึกษาภาษีและประกันชีวิต)',
-        'ใบอนุญาต คปภ. เลขที่ 6202081726',
-        'สรุปสิทธิลดหย่อนภาษีกลุ่มประกันและกองทุน ลดหย่อนได้สูงสุดเท่าไหร่ ปี 2567',
-        'tax-deduction-insurance-summary-2026',
-        'คู่มือวางแผนลดหย่อนภาษีส่งท้ายปีด้วยประกันชีวิต 100,000 แรก ประกันสุขภาพ 25,000 ประกันบำนาญ 200,000 และกองทุน ThaiESG รวมลดหย่อนได้สูงสุดหลักแสนบาท',
-        '# สรุปสิทธิลดหย่อนภาษีกลุ่มประกันและกองทุน\n\nหลายคนมักสับสนว่าประกันแต่ละประเภทนำมาลดหย่อนภาษีซ้อนกันได้หรือไม่ ในความเป็นจริง กรมสรรพากรได้แบ่งโควตาลดหย่อนภาษีไว้อย่างชัดเจน...',
-        7
-      );
-    `);
+    // 4. Seed Users & Agents
+    const [existingUsers]: any = await pool.query('SELECT COUNT(*) as count FROM users');
+    if (existingUsers[0].count === 0) {
+      await pool.query(`
+        INSERT INTO users (id, email, password_hash, phone, first_name, last_name, role, is_verified) VALUES
+        (1, 'admin@modtanoy.com', 'admin1234', '089-123-4567', 'ชนุดม', 'รัตนรักษ์', 'ADMIN', TRUE),
+        (2, 'agent1@modtanoy.com', 'agent1234', '081-987-6543', 'กิตติศักดิ์', 'โภคทรัพย์', 'AGENT', TRUE);
+      `);
 
-    console.log('✅ Database seeded successfully with realistic products and articles!');
+      await pool.query(`
+        INSERT INTO agents (id, user_id, license_no, license_type, specialized_areas, assigned_leads_count, is_available) VALUES
+        (1, 2, '6401029384', 'LIFE', 'ประกันสุขภาพเหมาจ่าย, ประกันบำนาญและลดหย่อนภาษี', 5, TRUE);
+      `);
+      console.log('✅ Users & Agents seeded.');
+    }
+
+    // 5. Seed Leads (Customer Inquiries)
+    const [existingLeads]: any = await pool.query('SELECT COUNT(*) as count FROM leads');
+    if (existingLeads[0].count <= 1) {
+      // Clean previous 1 test row if any
+      await pool.query('DELETE FROM leads');
+      await pool.query(`
+        INSERT INTO leads (
+          id, interested_product_id, assigned_agent_id, customer_name, customer_phone, customer_email,
+          preferred_contact_time, province, age_range, budget_range, user_notes, pdpa_consent, status, created_at
+        ) VALUES
+        (
+          1, 1, 1, 'คุณธีรพงศ์ รัตนศิริ', '081-234-5678', 'theerapong@gmail.com',
+          'ช่วงบ่าย (13:00 - 17:00 น.)', 'กรุงเทพมหานคร', '31 - 40 ปี', '20,000 - 40,000 บาท/ปี',
+          'ต้องการเปรียบเทียบค่าห้องเดี่ยวมาตรฐานของโรงพยาบาลในเครือ BDMS สนใจแผนเหมาจ่าย 20-50 ล้าน',
+          TRUE, 'NEW', DATE_SUB(NOW(), INTERVAL 2 HOUR)
+        ),
+        (
+          2, 3, 1, 'คุณพิมพ์ใจ สุขสวัสดิ์', '089-876-5432', 'pimjai.s@hotmail.com',
+          'ช่วงเย็นหลังเลิกงาน (17:00 - 20:00 น.)', 'เชียงใหม่', '41 - 50 ปี', '70,000 - 100,000 บาท/ปี',
+          'สนใจลดหย่อนภาษี 100,000 บาทแรก ออมสั้น 5 ปี มีเงินคืนทุกปี ส่งข้อเสนอผ่าน LINE ให้แล้ว',
+          TRUE, 'CONTACTED', DATE_SUB(NOW(), INTERVAL 1 DAY)
+        ),
+        (
+          3, 4, 1, 'คุณอนันต์ วงศ์ไพศาล', '086-555-4321', 'anan.w@yahoo.com',
+          'ช่วงเช้า (09:00 - 12:00 น.)', 'นนทบุรี', '45 - 55 ปี', '40,000 - 70,000 บาท/ปี',
+          'วางแผนเกษียณอายุ ต้องการทราบเงินบำนาญต่อปีและการันตีจ่าย นัดคุย Zoom พรุ่งนี้ 10:00 น.',
+          TRUE, 'CONSULTING', DATE_SUB(NOW(), INTERVAL 2 DAY)
+        ),
+        (
+          4, 2, 1, 'คุณกมลวรรณ ชาญณรงค์', '092-111-2233', 'kamonwan.c@gmail.com',
+          'ช่วงบ่าย (13:00 - 17:00 น.)', 'ชลบุรี', '25 - 30 ปี', '20,000 - 40,000 บาท/ปี',
+          'ปิดการขายเรียบร้อย ส่งเอกสารตรวจสุขภาพและออกกรมธรรม์ AIA Health Happy แผน 5 ล้านแล้ว',
+          TRUE, 'CLOSED_WON', DATE_SUB(NOW(), INTERVAL 3 DAY)
+        ),
+        (
+          5, 2, 1, 'คุณธนกร บุญประเสริฐ', '085-999-8877', 'thanakorn.b@outlook.com',
+          'สะดวกทุกเวลา', 'ภูเก็ต', '35 - 45 ปี', '20,000 - 40,000 บาท/ปี',
+          'สอบถามโปรโมชั่นของแถมและการผ่อน 0% ผ่านบัตรเครดิต สนใจทำประกันครอบครัว 3 คน',
+          TRUE, 'NEW', DATE_SUB(NOW(), INTERVAL 4 DAY)
+        );
+      `);
+      console.log('✅ Leads seeded (5 realistic customers).');
+    }
+
+    // 6. Seed Articles (with High-Resolution Photography & Badges)
+    const [existingArticles]: any = await pool.query('SELECT COUNT(*) as count FROM articles');
+    if (existingArticles[0].count < 3) {
+      await pool.query('DELETE FROM articles');
+      await pool.query(`
+        INSERT INTO articles (
+          id, category_id, author_name, author_license, title, slug, excerpt, content,
+          cover_image_url, reading_time_minutes, is_published, published_at
+        ) VALUES
+        (
+          1, 1,
+          'กิตติศักดิ์ โภคทรัพย์ (CFP®, ที่ปรึกษาการเงิน)',
+          'ใบอนุญาต คปภ. เลขที่ 6401029384',
+          'วิธีเลือกประกันสุขภาพเหมาจ่าย 2568 ฉบับเข้าใจง่าย ไม่โดนเท ไม่จ่ายเบี้ยทิ้ง',
+          'how-to-choose-health-insurance-2026',
+          'เจาะลึก 5 จุดเช็กพอยต์สำคัญก่อนตัดสินใจซื้อประกันสุขภาพเหมาจ่าย ทั้งเงื่อนไขค่าห้องเดี่ยวมาตรฐาน วงเงินการรักษา OPD และข้อควรระวังเรื่องระยะเวลารอคอย (Waiting Period)',
+          '# วิธีเลือกประกันสุขภาพเหมาจ่าย 2568\\n\\nการมีประกันสุขภาพเหมาจ่ายกลายเป็นสิ่งจำเป็นในยุคที่ค่ารักษาพยาบาลและค่าห้องพยาบาลปรับตัวสูงขึ้นทุกปี บทความนี้จะสรุปหัวใจสำคัญ 5 ข้อที่ต้องรู้ก่อนทำประกันสุขภาพ...\\n\\n## 1. ค่าห้องเดี่ยวมาตรฐาน\\nค่าห้องถือเป็นสาเหตุอันดับหนึ่งของส่วนต่างค่ารักษาพยาบาล ให้เลือกแผนที่ระบุว่าคุ้มครองตามค่าห้องเดี่ยวมาตรฐานของโรงพยาบาล\\n\\n## 2. วงเงินเหมาจ่ายต่อปี\\nควรเลือกวงเงินเริ่มต้นอย่างน้อย 5 - 20 ล้านบาทต่อปี เพื่อรองรับกรณีเจ็บป่วยหนักหรือผ่าตัดใหญ่',
+          'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1200&auto=format&fit=crop',
+          6, TRUE, NOW()
+        ),
+        (
+          2, 5,
+          'วราภรณ์ วงศ์สวัสดิ์ (ที่ปรึกษาภาษีและประกันชีวิต)',
+          'ใบอนุญาต คปภ. เลขที่ 6202081726',
+          'สรุปสิทธิลดหย่อนภาษีกลุ่มประกันและกองทุน ลดหย่อนได้สูงสุดเท่าไหร่ ปี 2567-2568',
+          'tax-deduction-insurance-summary-2026',
+          'คู่มือวางแผนลดหย่อนภาษีส่งท้ายปีด้วยประกันชีวิต 100,000 แรก ประกันสุขภาพ 25,000 ประกันบำนาญ 200,000 และกองทุน ThaiESG รวมลดหย่อนได้สูงสุดหลักแสนบาท',
+          '# สรุปสิทธิลดหย่อนภาษีกลุ่มประกันและกองทุน\\n\\nหลายคนมักสับสนว่าประกันแต่ละประเภทนำมาลดหย่อนภาษีซ้อนกันได้หรือไม่ ในความเป็นจริง กรมสรรพากรได้แบ่งโควตาลดหย่อนภาษีไว้อย่างชัดเจน...\\n\\n## สิทธิลดหย่อนกลุ่มประกันชีวิตและสุขภาพ (สูงสุด 100,000 บาท)\\n- ประกันชีวิตทั่วไป: สูงสุด 100,000 บาท\\n- ประกันสุขภาพตนเอง: สูงสุด 25,000 บาท (เมื่อรวมกับประกันชีวิตแล้วต้องไม่เกิน 100,000 บาท)\\n\\n## สิทธิลดหย่อนกลุ่มเพื่อการเกษียณ (สูงสุด 200,000 - 500,000 บาท)\\n- ประกันบำนาญ: สูงสุด 15% ของรายได้ ไม่เกิน 200,000 บาท',
+          'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1200&auto=format&fit=crop',
+          7, TRUE, DATE_SUB(NOW(), INTERVAL 5 DAY)
+        ),
+        (
+          3, 1,
+          'คุณชนุดม รัตนรักษ์ (Senior Financial Advisor)',
+          'ใบอนุญาต คปภ. เลขที่ 6503099182',
+          'ทำไมคนยุคใหม่ควรมีประกันโรคร้ายแรงควบคู่ประกันสุขภาพเหมาจ่าย?',
+          'why-need-critical-illness-insurance',
+          'ประกันสุขภาพเหมาจ่ายจ่ายค่ารักษาให้โรงพยาบาล แต่ประกันโรคร้ายแรงจ่ายเงินก้อนให้คุณนำไปใช้ชีวิต ชดเชยรายได้ที่ขาดหายช่วงพักฟื้น ทำไมจึงต้องมีคู่กัน?',
+          '# ทำไมคนยุคใหม่ควรมีประกันโรคร้ายแรงควบคู่ประกันสุขภาพเหมาจ่าย?\\n\\nเมื่อตรวจพบโรคร้ายแรง เช่น มะเร็ง หลอดเลือดสมอง หรือหัวใจ สิ่งที่เกิดขึ้นตามมาไม่ใช่แค่ค่ารักษาพยาบาล แต่คือ ค่าครองชีพ ค่าจ้างพยาบาลพิเศษ และการต้องหยุดงานยาวนาน...\\n\\n## ความแตกต่างระหว่างประกันสุขภาพเหมาจ่าย vs ประกันโรคร้ายแรง\\n1. ประกันสุขภาพเหมาจ่าย: จ่ายตรงให้โรงพยาบาลตามค่ารักษาจริง\\n2. ประกันโรคร้ายแรง: จ่ายเงินสดก้อนตรงให้ผู้เอาประกันภัยทันทีที่วินิจฉัยพบโรค',
+          'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop',
+          5, TRUE, DATE_SUB(NOW(), INTERVAL 10 DAY)
+        );
+      `);
+      console.log('✅ Articles seeded (3 full guides with cover photos).');
+    }
+
+    // 7. Seed Hero Slides
+    const [existingSlides]: any = await pool.query('SELECT COUNT(*) as count FROM hero_slides');
+    if (existingSlides[0].count === 0) {
+      await pool.query(`
+        INSERT INTO hero_slides (
+          id, badge_text, badge_icon, title, title_highlight, subtitle, tags,
+          primary_btn_label, primary_btn_href, secondary_btn_label, secondary_btn_href,
+          card_badge, card_main_title, card_main_metric, card_main_metric_sub,
+          stat1_label, stat1_value, stat1_desc, stat2_label, stat2_value, stat2_desc,
+          card_footer_note, background_image, is_active, sort_order
+        ) VALUES
+        (
+          1,
+          'ประกันสุขภาพเหมาจ่าย 2026',
+          'Shield',
+          'วางแผนประกันสุขภาพและลดหย่อนภาษี',
+          'เพื่อความคุ้มครองที่สมบูรณ์แบบ',
+          'เลือกแผนประกันที่ตอบโจทย์ชีวิต วางแผนภาษีเงินได้บุคคลธรรมดาอย่างชาญฉลาด ดูแลโดยที่ปรึกษาการเงินและตัวแทนมืออาชีพ',
+          JSON_ARRAY('เหมาจ่ายค่ารักษาพยาบาลตามจริง', 'ลดหย่อนภาษีสูงสุด 300,000 บาท', 'แฟกซ์เคลมไม่ต้องสำรองจ่าย', 'ปรึกษาฟรี ไม่มีข้อผูกมัด'),
+          'ปรึกษาตัวแทนฟรี',
+          '#contact-form',
+          'เปรียบเทียบแผนประกัน',
+          '/products',
+          'TOP HIGHLIGHT PLAN',
+          'แผนประกันสุขภาพเหมาจ่ายยอดนิยม',
+          'เหมาจ่าย 5,000,000',
+          'ต่อรอบปีกรมธรรม์ ไม่จำกัดวงเงินต่อครั้ง',
+          'ลดหย่อนภาษี',
+          '25,000 บ.',
+          'ตามจ่ายจริง',
+          'ความพึงพอใจ',
+          '99.8%',
+          'เคลมรวดเร็ว',
+          '✓ ตัวแทนดูแลแบบ VIP พร้อมประสานงานโรงพยาบาล 24 ชม.',
+          'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop',
+          TRUE,
+          1
+        ),
+        (
+          2,
+          'เทคนิคลดหย่อนภาษีส่งท้ายปี',
+          'Receipt',
+          'ประหยัดภาษีสูงสุด 300,000 บาท',
+          'สร้างเงินออมเพื่ออนาคต',
+          'รวมแผนประกันชีวิตสะสมทรัพย์และประกันบำนาญ ผลตอบแทนการันตี พร้อมคำนวณฐานภาษีให้ฟรีทุกขั้นตอน',
+          JSON_ARRAY('ประกันชีวิต 100,000 บาทแรก', 'ประกันบำนาญ 200,000 บาทหลัง', 'เงินคืนการันตีทุกปี', 'คำนวณภาษีแม่นยำ 100%'),
+          'คำนวณภาษีของคุณ',
+          '/calculators/tax',
+          'ดูแผนสะสมทรัพย์',
+          '/products?category=savings-insurance',
+          'TAX SAVING OPTIMIZER',
+          'ประกันสะสมทรัพย์ & บำนาญ 2567',
+          'ประหยัดสูงสุด 35%',
+          'ตามฐานภาษีเงินได้บุคคลธรรมดา',
+          'ผลตอบแทน',
+          'การันตีคืน',
+          'สม่ำเสมอทุกปี',
+          'ลดหย่อนได้',
+          '300,000 บ.',
+          'เต็มสิทธิ์สูงสุด',
+          '✓ วางแผนภาษีครบทั้งครอบครัว โดยผู้เชี่ยวชาญ คปภ.',
+          'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1200&auto=format&fit=crop',
+          TRUE,
+          2
+        ),
+        (
+          3,
+          'หลักประกันความมั่นคงครอบครัว',
+          'Users',
+          'ปกป้องคนที่คุณรักอย่างมั่นคง',
+          'ส่งต่อมรดกและทุนการศึกษา',
+          'คำนวณทุนประกันชีวิตที่เหมาะสม (Capital Need Analysis) เพื่อให้ครอบครัวเดินหน้าต่อได้อย่างไร้กังวล',
+          JSON_ARRAY('คำนวณทุนชีวิตตามหลักวิชาชีพ', 'ครอบคลุมหนี้สินและค่าใช้จ่ายบุตร', 'เบี้ยประกันเริ่มต้นเพียงหลักร้อย', 'เปรียบเทียบข้อเสนอ 5 บริษัทชั้นนำ'),
+          'ประเมินทุนประกันที่ต้องมี',
+          '/calculators/life-value',
+          'สำรวจแผนความคุ้มครอง',
+          '/products?category=life-protection',
+          'FAMILY PROTECTION FUND',
+          'ทุนประกันชีวิตและมรดกเพื่อครอบครัว',
+          'ทุนคุ้มครอง 10,000,000',
+          'สร้างความอุ่นใจให้ลูกและคนที่คุณรัก',
+          'มรดกปลอดภาษี',
+          '100%',
+          'ส่งต่อทายาททันที',
+          'ทุนการศึกษา',
+          'ครอบคลุม',
+          'จนจบปริญญาตรี',
+          '✓ ให้คำปรึกษาด้วยใจจริง ปรับแต่งวงเงินตามงบประมาณ',
+          'https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=1200&auto=format&fit=crop',
+          TRUE,
+          3
+        );
+      `);
+      console.log('✅ Hero slides seeded (3 carousel banners with background images).');
+    }
+
+    // 8. Seed Announcements Popup
+    const [existingAnnouncements]: any = await pool.query('SELECT COUNT(*) as count FROM announcements');
+    if (existingAnnouncements[0].count === 0) {
+      await pool.query(`
+        INSERT INTO announcements (
+          id, badge_text, title, subtitle, image_url,
+          primary_btn_label, primary_btn_href, secondary_btn_label, secondary_btn_href,
+          show_countdown, countdown_end_date, is_active
+        ) VALUES
+        (
+          1,
+          'แคมเปญพิเศษส่งท้ายปี',
+          'วางแผนลดหย่อนภาษี & สุขภาพเหมาจ่าย 2567',
+          'รับสิทธิ์คำนวณภาษีรายบุคคลฟรี พร้อมรับตารางเปรียบเทียบเบี้ยประกันจาก 5 บริษัทชั้นนำ ดูแลโดยตัวแทนคุณวุฒิ คปภ.',
+          'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=1000&auto=format&fit=crop',
+          'ปรึกษาตัวแทนรับสิทธิ์ด่วน',
+          '#contact-form',
+          'ทดลองคำนวณภาษีด้วยตนเอง',
+          '/calculators/tax',
+          TRUE,
+          '31 ธ.ค. 2567',
+          TRUE
+        );
+      `);
+      console.log('✅ Announcement popup seeded.');
+    }
+
+    console.log('🎉 All mock data has been successfully synchronized into the database!');
   } catch (error) {
     console.error('❌ Error during seeding:', (error as Error).message);
   }

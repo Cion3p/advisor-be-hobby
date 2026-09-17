@@ -2,6 +2,7 @@ import { pool } from '../config/db.js';
 
 export interface ProductFilter {
   categorySlug?: string;
+  company?: string;
   minAge?: number;
   maxBudget?: number;
   isTaxDeductible?: boolean;
@@ -39,6 +40,11 @@ export async function getProducts(filter: ProductFilter = {}) {
   if (filter.categorySlug) {
     query += ' AND c.slug = ?';
     params.push(filter.categorySlug);
+  }
+
+  if (filter.company) {
+    query += ' AND (comp.code = ? OR comp.name LIKE ?)';
+    params.push(filter.company, `%${filter.company}%`);
   }
 
   if (filter.minAge !== undefined) {
