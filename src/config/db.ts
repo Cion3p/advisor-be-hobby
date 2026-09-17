@@ -3,7 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const dbConfig = {
+const isAiven = Boolean(process.env.DB_HOST && (process.env.DB_HOST.includes('aivencloud.com') || process.env.DB_SSL === 'true'));
+
+const dbConfig: mysql.PoolOptions = {
   host: process.env.DB_HOST || '127.0.0.1',
   port: parseInt(process.env.DB_PORT || '3306', 10),
   user: process.env.DB_USER || 'root',
@@ -14,6 +16,7 @@ const dbConfig = {
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  ssl: isAiven ? { rejectUnauthorized: false } : undefined,
 };
 
 // Main pool with database selected
@@ -28,6 +31,7 @@ export async function initDatabase(): Promise<boolean> {
       port: dbConfig.port,
       user: dbConfig.user,
       password: dbConfig.password,
+      ssl: dbConfig.ssl,
     });
 
     await rootConnection.query(
@@ -239,11 +243,45 @@ export async function initDatabase(): Promise<boolean> {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS analytics_events (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        session_id VARCHAR(100),
+        visitor_id VARCHAR(100),
         event_type VARCHAR(50) NOT NULL,
+        page_path VARCHAR(255),
+        page_title VARCHAR(255),
+        referrer VARCHAR(500),
+        device_type VARCHAR(50) DEFAULT 'desktop',
+        browser VARCHAR(50),
+        ip_address VARCHAR(45),
+        consent_status VARCHAR(50) DEFAULT 'all',
         event_data JSON,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_event_type (event_type),
+        INDEX idx_visitor_id (visitor_id),
+        INDEX idx_page_path (page_path),
+        INDEX idx_created_at (created_at)
       ) ENGINE=InnoDB;
     `);
+
+    // Ensure all columns exist for existing tables
+    const extraColumns = [
+      { name: 'session_id', type: 'VARCHAR(100)' },
+      { name: 'visitor_id', type: 'VARCHAR(100)' },
+      { name: 'page_path', type: 'VARCHAR(255)' },
+      { name: 'page_title', type: 'VARCHAR(255)' },
+      { name: 'referrer', type: 'VARCHAR(500)' },
+      { name: 'device_type', type: "VARCHAR(50) DEFAULT 'desktop'" },
+      { name: 'browser', type: 'VARCHAR(50)' },
+      { name: 'ip_address', type: 'VARCHAR(45)' },
+      { name: 'consent_status', type: "VARCHAR(50) DEFAULT 'all'" },
+    ];
+
+    for (const col of extraColumns) {
+      try {
+        await pool.query(`ALTER TABLE analytics_events ADD COLUMN ${col.name} ${col.type};`);
+      } catch {
+        // column already exists, safe to ignore
+      }
+    }
 
     console.log('✅ Database schema initialized successfully.');
     return true;
